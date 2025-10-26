@@ -1,0 +1,201 @@
+Cursor Programs
+
+Simple Cursor:
+DECLARE
+eid   employee.empid%TYPE;  
+en    employee.empname%TYPE;
+sal   employee.salary%TYPE;
+dept  employee.department%TYPE;
+CURSOR c1 IS
+SELECT empid, empname, salary, department FROM employee;  
+BEGIN
+OPEN c1;
+LOOP
+FETCH c1 INTO eid, en, sal, dept;
+EXIT WHEN c1%NOTFOUND;   
+DBMS_OUTPUT.PUT_LINE(eid || ' ' || en || ' ' || TO_CHAR(sal) || ' ' || dept);
+END LOOP;
+CLOSE c1;
+END;
+/
+
+
+
+
+
+Cursor For loop:
+declare
+cursor c1 is
+select empid, emp_sal from emp;
+avg_sal number;
+begin
+select avg(emp_sal) into avg_sal from emp;
+for rec in c1 loop
+if rec.emp_sal < avg_sal then
+update emp
+set emp_sal = emp_sal + 500
+where empid = rec.empid;
+end if;
+end loop;
+commit;
+end;
+/
+
+
+
+
+
+
+
+
+Cursor For Update:
+declare 
+empid int;
+emp_name varchar(20);
+emp_sal float;
+emp_dept varchar(20);
+cursor c1 is 
+select * from emp where emp_sal < 6500 for update;
+begin
+open c1;
+loop
+fetch c1 into empid, emp_name, emp_sal, emp_dept;
+exit when c1%NOTFOUND; 
+dbms_output.put_line(empid || ' ' || emp_name || ' ' || emp_sal);
+delete from emp where current of c1;
+end loop;
+close c1;
+end;
+/
+
+
+
+
+
+
+Cursor For Parameterised:
+declare
+eid int;
+en varchar(20);
+sal float;
+dept varchar(20);
+nm varchar(20);
+cursor c1(nm) is select * from employee where dept=nm ;
+begin
+open c1(&nm);
+loop
+fetch c1 into eid,en,sal,dept;
+exit when c1%notfound;
+dbms_output.put_line(eid || en || sal || dept);
+end loop;
+close c1;
+end;
+/
+
+
+
+
+
+
+
+
+Output:
+SQL*Plus: Release 21.0.0.0.0 - Production on Tue Sep 9 12:18:21 2025
+Version 21.3.0.0.0
+
+Copyright (c) 1982, 2021, Oracle.  All rights reserved.
+
+Enter user-name: system
+Enter password:
+Last Successful login time: Tue Sep 09 2025 12:12:59 +05:30
+
+Connected to:
+Oracle Database 21c Express Edition Release 21.0.0.0.0 - Production
+Version 21.3.0.0.0
+
+SQL> create table employee2(empid int,emp_name varchar(20),emp_sal float,emp_dept varchar(2));
+
+Table created.
+
+SQL> create table emp(empid int,emp_name varchar(20),emp_sal float,emp_dept varchar(20));
+
+Table created.
+
+SQL> insert into emp values(11,'Atharva',5000,'computer');
+
+1 row created.
+
+SQL> insert into emp values(12,'Sejal',6000,'IT');
+
+1 row created.
+
+SQL> insert into emp values(13,'Kartika',9000,'AIDS');
+
+1 row created.
+
+SQL> insert into emp values(14,'Kaustubh',9000,'AIML');
+
+1 row created.
+
+SQL> insert into emp values(15,'Nil',9000,'computer');
+
+1 row created.
+
+SQL> desc emp;
+ Name                                             Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ EMPID                                                   NUMBER(38)
+ EMP_NAME                                           VARCHAR2(20)
+ EMP_SAL                                                FLOAT(126)
+ EMP_DEPT                                             VARCHAR2(20)
+
+SQL> select * from emp;
+
+     EMPID EMP_NAME                EMP_SAL EMP_DEPT
+        ---------- -------------------- ---------- --------------------
+       11 Atharva                                  5000 computer
+       12 Sejal                                    6000 IT
+       13 Kartika                                9000 AIDS
+       14 Kaustubh                            9000 AIML
+       15 Nil                                        9000 computer
+
+SQL> set serveroutput on
+SQL> @C:\Users\System05\Desktop\Atharva13111\cursor_loop.sql
+
+PL/SQL procedure successfully completed.
+
+SQL> select empid, emp_sal from emp;
+
+     EMPID    EMP_SAL
+      ---------- ----------
+       11       5500
+       12       6500
+       13       9000
+       14       9000
+       15       9000
+
+SQL> SELECT empid, emp_name, emp_sal, emp_dept FROM emp ORDER BY empid;
+
+     EMPID EMP_NAME                EMP_SAL EMP_DEPT
+       ---------- -------------------- ---------- --------------------
+       11 Atharva                                  5500 computer
+       12 Sejal                                    6500 IT
+       13 Kartika                                9000 AIDS
+       14 Kaustubh                            9000 AIML
+       15 Nil                                        9000 computer
+
+SQL> set srveroutput on
+SP2-0735: unknown SET option beginning "srveroutpu..."
+SQL> set serveroutput on
+SQL> @C:\Users\System05\Desktop\Atharva13111\cursor_update1.sql
+101 Dipa 5500
+
+PL/SQL procedure successfully completed.
+SQL> select * from emp;
+
+     EMPID EMP_NAME                EMP_SAL EMP_DEPT
+       ---------- -------------------- ---------- --------------------
+       12 Sejal                                      6500 IT
+       13 Kartika                                  9000 AIDS
+       14 Kaustubh                              9000 AIML
+       15 Nil                                          9000 computer
