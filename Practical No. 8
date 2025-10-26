@@ -1,0 +1,209 @@
+Audit_insert.sql:-
+create or replace trigger Audit_insert
+before delete or insert on Audit_t
+begin 
+if rtrim (upper(to_char(sysdate,'day')))='WEDNESDAY' then 
+raise_application_error ( -200000,'cant delete');
+end if;
+end;
+/
+Audit_update.sql:-
+create or replace trigger Audit_update
+before delete or update on Audit_t
+begin 
+if rtrim (upper(to_char(sysdate,'day')))='WEDNESDAY' then 
+raise_application_error ( -200000,'cant delete');
+end if;
+end;
+/
+Insert.sql:-
+CREATE OR REPLACE TRIGGER insertmaster
+AFTER INSERT ON clientmaster
+FOR EACH ROW
+BEGIN
+    INSERT INTO insertbackup (srno, name)
+    VALUES (:NEW.srno, :NEW.name);
+END;
+/
+Update.sql:-
+create or replace trigger updatemaster
+before update or delete on clientmaster
+for each row
+BEGIN
+insert into Audit_t (srno, name) values (:old.srno, :old.name);
+END;
+/
+
+OUTPUT:-
+
+SQL*Plus: Release 21.0.0.0.0 - Production on Wed Sep 10 22:49:12 2025
+Version 21.3.0.0.0
+
+Copyright (c) 1982, 2021, Oracle.  All rights reserved.
+
+Enter user-name: system
+Enter password:
+Last Successful login time: Tue Sep 09 2025 12:08:29 +05:30
+
+Connected to:
+Oracle Database 21c Express Edition Release 21.0.0.0.0 - Production
+Version 21.3.0.0.0
+
+SQL> create table clientmaster(srno int, name varchar(20));
+
+Table created.
+
+SQL> create table Audit_t as select * from clientmaster;
+
+Table created.
+
+SQL> insert into clientmaster (srno,name) values (101,'Dev');
+
+1 row created.
+
+SQL> insert into clientmaster (srno,name) values (102,'Khushi');
+
+1 row created.
+
+SQL> insert into clientmaster (srno,name) values (102,'Raj');
+
+1 row created.
+
+SQL> @C:\Users\Projectlab\Desktop\sqlplus\trigger\update.sql
+
+Trigger created.
+
+SQL> select * from clientmaster;
+
+      SRNO NAME
+---------- --------------------
+       101 Dev
+       102 Khushi
+       102 Raj
+
+SQL> update clientmaster set srno = 103 where name = 'Raj';
+
+1 row updated.
+
+SQL> select * from clientmaster;
+
+      SRNO NAME
+---------- --------------------
+       101 Dev
+       102 khushi
+       103 Raj
+
+SQL> select * from Audit_t;
+
+      SRNO NAME
+---------- --------------------
+       102 Raj
+
+SQL> delete from clientmaster where srno = 102;
+
+1 row deleted.
+
+SQL> select * from Audit_t;
+
+      SRNO NAME
+---------- --------------------
+       102 Raj
+       102 Khushi
+
+SQL> commit;
+
+Commit complete.
+
+
+SQL> @C:\Users\Projectlab\Desktop\sqlplus\trigger\update.sql
+
+Trigger created.
+
+SQL> select * from clientmaster;
+
+      SRNO NAME
+---------- --------------------
+       101 Dev
+       103 Raj
+
+SQL> insert into cilentmaster (srno,name) values (103,'Khushi');
+insert into cilentmaster (srno,name) values (103,'Khushi')
+            *
+ERROR at line 1:
+ORA-00942: table or view does not exist
+
+SQL> select * from Audit_t;
+
+      SRNO NAME
+---------- --------------------
+       102 Raj
+       102 Khushi
+
+SQL> create table insertbackup as select * from clientmaster;
+
+Table created.
+
+SQL> @C:\Users\Projectlab\Desktop\sqlplus\trigger\insert.sql
+
+Trigger created.
+
+SQL> select * from insertbackup;
+
+      SRNO NAME
+---------- --------------------
+       101 Dev
+       103 Raj
+
+SQL> insert into clientmaster values(104,'Vir');
+
+1 row created.
+
+SQL> select * from Audit_t;
+
+      SRNO NAME
+---------- --------------------
+       102 Raj
+       102 Khushi
+
+SQL> select * from clientmaster;
+
+      SRNO NAME
+---------- --------------------
+       101 Dev
+       103 Raj
+       104 Vir
+
+SQL> @C:\Users\Projectlab\Desktop\sqlplus\trigger\Audit_insert.sql
+
+Trigger created.
+
+SQL> @C:\Users\Projectlab\Desktop\sqlplus\trigger\Audit_update.sql
+
+Trigger created.
+
+SQL> select * from clientmaster;
+
+      SRNO NAME
+---------- --------------------
+       101 Dev
+       103 Raj
+       104 Vir
+
+SQL> select * from Audit_t;
+
+      SRNO NAME
+---------- --------------------
+       102 Raj
+       102 khushi
+
+SQL> select * from insertbackup;
+
+      SRNO NAME
+---------- --------------------
+       101Dev
+       103 Raj
+       104 Vir
+
+SQL> commit;
+
+Commit complete.
