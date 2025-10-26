@@ -1,0 +1,46 @@
+use shopDB;
+
+db.product.insertMany([
+  { pid: 1, pname: "Pen", price: 50, quantity: 100 },
+  { pid: 2, pname: "Notebook", price: 120, quantity: 200 },
+  { pid: 3, pname: "Pencil", price: 30, quantity: 300 },
+  { pid: 4, pname: "Eraser", price: 80, quantity: 150 }
+]);
+
+db.product.updateMany(
+  { price: { $lt: 100 } },
+  { $set: { price: 200 } }
+);
+
+db.product.find().pretty();
+
+db.product.insertOne({ pid: 5, pname: "Sharpener", price: 60, quantity: 100 });
+
+db.product.find({ pid: 5 });
+
+db.product.updateOne(
+  { pid: 5 },
+  { $set: { price: 150 } }
+);
+
+db.product.deleteOne({ pid: 5 });
+
+db.product.insertOne({ pid: 6, pname: "Marker", price: 70, quantity: 80 });
+
+db.product.find({
+  $and: [
+    { quantity: { $gt: 100 } },
+    { price: 200 }
+  ]
+});
+
+db.product.find({
+  $or: [
+    { quantity: { $gt: 250 } },
+    { price: { $gt: 150 } }
+  ]
+});
+
+db.product.find({ quantity: { $gte: 150 } });
+
+db.product.find({ price: { $ne: 200 } });
