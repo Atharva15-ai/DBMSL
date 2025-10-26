@@ -1,0 +1,78 @@
+Please enter a MongoDB connection string (Default: mongodb://localhost/): mongosh
+mongosh
+Current Mongosh Log ID: 68e63379f1d7737d4ecebea3
+Connecting to:          mongodb://127.0.0.1:27017/mongosh?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.5.8
+Using MongoDB:          8.2.0
+Using Mongosh:          2.5.8
+
+For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2025-09-28T21:12:59.884-07:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+------
+
+mongosh> use employee
+switched to db employee
+employee> db.createCollection('emp');
+{ ok: 1 }
+employee> db.emp.insertOne({ename:'Atharav',salary:50000,dept:'IT'});
+{
+  acknowledged: true,
+  insertedId: ObjectId('68e633d1f1d7737d4ecebea4')
+}
+employee> db.emp.insertOne({ename:'Aarav',salary:60000,dept:'IT'});
+{
+  acknowledged: true,
+  insertedId: ObjectId('68e633dff1d7737d4ecebea5')
+}
+employee> db.emp.insertOne({ename:'Diya',salary:70000,dept:'cs'});
+{
+  acknowledged: true,
+  insertedId: ObjectId('68e633f2f1d7737d4ecebea6')
+}
+employee> db.emp.aggregate([{$group:{_id:null,TotalSal:{$sum:'$salary'}}}]);
+[ { _id: null, TotalSal: 180000 } ]
+employee> db.emp.aggregate([{$group:{_id:null,TotalSal:{$min:'$salary'}}}]);
+[ { _id: null, TotalSal: 50000 } ]
+employee> db.emp.aggregate([{$group:{_id:null,TotalSal:{$max:'$salary'}}}]);
+[ { _id: null, TotalSal: 70000 } ]
+employee> db.emp.aggregate([{$group:{_id:null,TotalSal:{$push:'$salary'}}}]);
+[ { _id: null, TotalSal: [ 50000, 60000, 70000 ] } ]
+employee> db.emp.aggregate([{$group:{_id:null,TotalSal:{$addToSet:'$salary'}}}]);
+[ { _id: null, TotalSal: [ 70000, 50000, 60000 ] } ]
+employee> db.emp.aggregate([{$group:{_id:'$dept',TotalSal:{$sum:'$salary'}}}]);
+[ { _id: 'IT', TotalSal: 110000 }, { _id: 'cs', TotalSal: 70000 } ]
+employee> db.emp.find().sort({ename:1})
+[
+  {
+    _id: ObjectId('68e633f2f1d7737d4ecebea6'),
+    ename: 'Diya',
+    salary: 70000,
+    dept: 'cs'
+  },
+  {
+    _id: ObjectId('68e633d1f1d7737d4ecebea4'),
+    ename: 'Atharav',
+    salary: 50000,
+    dept: 'IT'
+  },
+  {
+    _id: ObjectId('68e633dff1d7737d4ecebea5'),
+    ename: 'Aarav',
+    salary: 60000,
+    dept: 'IT'
+  }
+]
+
+employee> var map1 = function() { emit(this.dept, this.salary); };
+
+employee> var red1 = function() { return Array.sum(salary); };
+
+employee> var red2 = function(dept, salary) { return Array.sum(salary); };
+
+employee> db.emp.mapReduce(map1, red2, { out: 'abcd' });
+{ result: 'abcd', ok: 1 }
+
+emp2> db.abcd.find();
+[ { _id: 'IT', value: 110000 }, { _id: 'cs', value: 70000 } ]
