@@ -1,0 +1,143 @@
+Enter password: ****
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 8
+Server version: 8.0.43 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2025, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> create database shop;
+Query OK, 1 row affected (0.03 sec)
+
+mysql> use shop;
+Database changed
+mysql> -- Select the database
+mysql> USE shop;
+Database changed
+mysql>
+mysql> -- Create customer table
+mysql> CREATE TABLE customer (
+    ->   customer_id INT PRIMARY KEY,
+    ->   customer_name VARCHAR(100) NOT NULL,
+    ->   city VARCHAR(100),
+    ->   email VARCHAR(100)
+    -> );
+Query OK, 0 rows affected (0.06 sec)
+
+mysql>
+mysql> -- Create product table
+mysql> CREATE TABLE product (
+    ->   product_id INT PRIMARY KEY,
+    ->   product_name VARCHAR(100) NOT NULL,
+    ->   category VARCHAR(100),
+    ->   price DECIMAL(10, 2) NOT NULL
+    -> );
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> -- Create sale table
+mysql> CREATE TABLE sale (
+    ->   sale_id INT PRIMARY KEY,
+    ->   customer_id INT NOT NULL,
+    ->   product_id INT NOT NULL,
+    ->   quantity INT NOT NULL,
+    ->   sale_date DATE,
+    ->   total_amount INT
+    -> );
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> -- Add foreign key constraints
+mysql> ALTER TABLE sale
+    -> ADD CONSTRAINT fk_sale_customer FOREIGN KEY (customer_id) REFERENCES customer(customer_id);
+Query OK, 0 rows affected (0.07 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> ALTER TABLE sale
+    -> ADD CONSTRAINT fk_sale_product FOREIGN KEY (product_id) REFERENCES product(product_id);
+Query OK, 0 rows affected (0.04 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> -- Insert records into customer
+mysql> INSERT INTO customer (customer_id, customer_name, city, email) VALUES
+    -> (1, 'Riya', 'Pune', 'riya@mail.com'),
+    -> (2, 'Aman', 'Indore', 'aman@mail.com'),
+    -> (3, 'Mehul', 'Surat', 'mehul@mail.com');
+Query OK, 3 rows affected (0.01 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> -- Insert records into product
+mysql> INSERT INTO product (product_id, product_name, category, price) VALUES
+    -> (301, 'Wireless Mouse', 'Electronics', 750.00),
+    -> (302, 'Bluetooth Speaker', 'Electronics', 2200.00),
+    -> (303, 'Notebook', 'Stationery', 150.00);
+Query OK, 3 rows affected (0.00 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> -- Check product data
+mysql> SELECT * FROM product;
++------------+-------------------+-------------+---------+
+| product_id | product_name      | category    | price   |
++------------+-------------------+-------------+---------+
+|        301 | Wireless Mouse    | Electronics |  750.00 |
+|        302 | Bluetooth Speaker | Electronics | 2200.00 |
+|        303 | Notebook          | Stationery  |  150.00 |
++------------+-------------------+-------------+---------+
+3 rows in set (0.00 sec)
+
+mysql>
+mysql> -- Insert records into sale
+mysql> INSERT INTO sale (sale_id, customer_id, product_id, quantity, sale_date, total_amount) VALUES
+    -> (21, 1, 301, 4, '2025-08-10', 3000),
+    -> (22, 2, 302, 1, '2025-08-11', 2200),
+    -> (23, 3, 303, 6, '2025-08-12', 900);
+Query OK, 3 rows affected (0.00 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> -- Check sale data
+mysql> SELECT * FROM sale;
++---------+-------------+------------+----------+------------+--------------+
+| sale_id | customer_id | product_id | quantity | sale_date  | total_amount |
++---------+-------------+------------+----------+------------+--------------+
+|      21 |           1 |        301 |        4 | 2025-08-10 |         3000 |
+|      22 |           2 |        302 |        1 | 2025-08-11 |         2200 |
+|      23 |           3 |        303 |        6 | 2025-08-12 |          900 |
++---------+-------------+------------+----------+------------+--------------+
+3 rows in set (0.00 sec)
+
+mysql>
+mysql> -- Check customer data
+mysql> SELECT * FROM customer;
++-------------+---------------+--------+----------------+
+| customer_id | customer_name | city   | email          |
++-------------+---------------+--------+----------------+
+|           1 | Riya          | Pune   | riya@mail.com  |
+|           2 | Aman          | Indore | aman@mail.com  |
+|           3 | Mehul         | Surat  | mehul@mail.com |
++-------------+---------------+--------+----------------+
+3 rows in set (0.00 sec)
+
+mysql>
+mysql> -- Query to find customers whose total_amount is above the average total_amount
+mysql> SELECT DISTINCT customer_id
+    -> FROM sale
+    -> WHERE total_amount > (SELECT AVG(total_amount) FROM sale);
++-------------+
+| customer_id |
++-------------+
+|           1 |
+|           2 |
++-------------+
+2 rows in set (0.01 sec)
+
+mysql>
